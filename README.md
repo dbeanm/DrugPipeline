@@ -1,4 +1,4 @@
-# Simple Drug NLP
+# DrugPipeline
 
 Modified from https://github.com/CogStack/OAC-NLP
 
