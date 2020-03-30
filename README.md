@@ -2,6 +2,8 @@
 
 Modified from https://github.com/CogStack/OAC-NLP
 
+data/ace2_drugs.csv is the list of drugs used for our preprint [Treatment with ACE-inhibitors is associated with less severe disease with SARS-Covid-19 infection in a multi-site UK acute Hospital Trust](https://www.researchgate.net/publication/340261837_Treatment_with_ACE-inhibitors_is_associated_with_less_severe_disease_with_SARS-Covid-19_infection_in_a_multi-site_UK_acute_Hospital_Trust?channel=doi&linkId=5e806057a6fdcc139c10467a&showFulltext=true)
+
 work in progress
 
 ```
