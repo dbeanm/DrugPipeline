@@ -29,9 +29,18 @@ class DrugAnnotator:
             self.negative_regex[dr] = [regex.compile(pattern)]
             pattern = r"(?:STOP|STOPPED|STOPPED HIS|STOPPED HER|WITHHOLD|WITHHELD|DISCONTINUE|DISCONTINUED|NOT ON|NOT CURRENTLY ON|CONSIDER|CONSIDER RESTARTING) " + term
             self.negative_regex[dr].append(regex.compile(pattern))
-            #allergies - considered negation as not a positive mention
-            pattern = r"(?:ALELRGIC|ALLERGIC TO|ALLERGIES) " + term
-            self.negative_regex[dr].append(regex.compile(pattern))
+            
+
+        self.allergy_regex = {}
+        for dr in self.all_drugs:
+            self.allergy_regex[dr] = []
+            p = term + r" ALLERG"
+            self.allergy_regex[dr].append(regex.compile(p))
+
+            p = r"ALLERG.{,20}" + term
+            self.allergy_regex[dr].append(regex.compile(p))
+
+        self.user_regex = {}
         
         #allow 2 substitutions here for S and D
         self.drugs_on_disch_regex = regex.compile('(?:DRUGS ON DISCHARGE){s<=2}')
@@ -42,6 +51,26 @@ class DrugAnnotator:
         self.drug_list_end_regex.append(regex.compile('(?:FINAL TTA ASSEMBLY){s<=2}'))
         #expression for a specific negation possible in discharge drug list
 
+    def detect_allergy(self, t):
+        #can't be allergic if NKDA found
+        if "NKDA" in t:
+            return False
+
+        #test all patterns, if any match return true, else return false
+        for pat in self.allergy_regex[dr]:
+            if len(pat.findall(ctx)) > 0:
+                return True
+        return False
+
+
+
+
+    def add_regex(self, name, patterns):
+        """
+        name: str, name for pattern in output data
+        patterns: list of pattern strings
+        """
+        self.user_regex['user_' + name] = [regex.compile(x.upper()) for x in patterns]
         
     def annotate(self, doc):
         doc = doc.upper().replace('\r\n','\n')
@@ -61,7 +90,8 @@ class DrugAnnotator:
             m = regex.finditer(reg.pattern, doc)
             for match in m:
                 # each time the drug name is found, test for negation
-                mention = {'drug': dr, 'mentioned':True, 'negated':False}
+                mention = {'drug': dr, 'mentioned':True, 'negated':False, 'allergic': False}
+                mention.update({x:False for x in self.user_regex})
                 # get context and search within it for negation
                 ctx_from = max(match.span()[0] - self.review_window, 0)
                 ctx_to = min(match.span()[1] + self.review_window, len(doc))
@@ -77,6 +107,12 @@ class DrugAnnotator:
                 for negator in self.negative_regex[dr]:
                     if len(negator.findall(ctx)) > 0:
                         mention['negated'] = True
+                for name in self.user_regex:
+                    for pattern in self.user_regex[name]:
+                        if len(pattern.findall(ctx)) > 0:
+                            mention[name] = True
+                mention['allergic'] = self.detect_allergy(ctx)
+
                 doc_data['mentions'].append(mention)
 
         return doc_data
