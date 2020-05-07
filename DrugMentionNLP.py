@@ -10,7 +10,7 @@ class DrugAnnotator:
         #these values are specifically tuned to our records
         self.empty_list_size = 550 #this is tuned specifically to our records
         self.multicomp_aid = 300
-        self.negation_window = 20
+        self.negation_window = 30
         self.review_window = 30
         
         #build regex
@@ -33,11 +33,12 @@ class DrugAnnotator:
 
         self.allergy_regex = {}
         for dr in self.all_drugs:
+            term = dr.upper()
             self.allergy_regex[dr] = []
             p = term + r" ALLERG"
             self.allergy_regex[dr].append(regex.compile(p))
 
-            p = r"ALLERG.{,20}" + term
+            p = r"ALLERG.{,25}" + term
             self.allergy_regex[dr].append(regex.compile(p))
 
         self.user_regex = {}
@@ -51,14 +52,14 @@ class DrugAnnotator:
         self.drug_list_end_regex.append(regex.compile('(?:FINAL TTA ASSEMBLY){s<=2}'))
         #expression for a specific negation possible in discharge drug list
 
-    def detect_allergy(self, t):
+    def detect_allergy(self, t, dr):
         #can't be allergic if NKDA found
         if "NKDA" in t:
             return False
 
         #test all patterns, if any match return true, else return false
         for pat in self.allergy_regex[dr]:
-            if len(pat.findall(ctx)) > 0:
+            if len(pat.findall(t)) > 0:
                 return True
         return False
 
@@ -111,7 +112,8 @@ class DrugAnnotator:
                     for pattern in self.user_regex[name]:
                         if len(pattern.findall(ctx)) > 0:
                             mention[name] = True
-                mention['allergic'] = self.detect_allergy(ctx)
+                al = self.detect_allergy(ctx, dr)
+                mention['allergic'] = al
 
                 doc_data['mentions'].append(mention)
 
