@@ -13,17 +13,12 @@ result = annr.annotate("my document text with drug 1")
 
 .annotate returns each mention of each drug tagged for negation and with the surrounding context
 
-## Overview
-
-Most of the regular expressions are used to detect negations, or any other keyword that means the drug is not currently being taken. Cases considered are:
-
-* Stopping, withholding, discontinuing
-* Allergy
-* Medication switching (A switched to B -> A is negated)
-* Consider / consider restarting (e.g. after surgery)
-
 ## Usage
 DrugMentionNLP.py contains the OACAnnotator class which does all the work, the only method used externally is .annotate()
+
+Demo usage in demo.py which also uses utils.py to format the output of the annotator to a convenient pandas dataframe. The demo script also demonstrates using a csv of drug brand/generic names to easily filter and group drugs for analysis.  
+
+Currently basic negation and allergy detection is enabled by default. 
 
 ## Funding
 Dan Bean is funded by Health Data Research UK
