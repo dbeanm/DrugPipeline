@@ -4,14 +4,17 @@ import regex
 class DrugAnnotator:
     # modified DrugNLP to work per mention not per discharge summary
     # target doc is Clinical Note - does not check the ". . STOP" pattern sometimes seen in a discharge summary drug list
-    def __init__(self, all_drugs):
+    def __init__(self, all_drugs, strict = False, review_window = 30):
         # all_drugs is a list of drug names
+        # if strict == True, only exact matches at word boundary are found. For brand names this is particularly important. 
+        # review_window = span of context used for negation detection and returned for review
         #used to check size of detectied drug lists
         #these values are specifically tuned to our records
         self.empty_list_size = 550 #this is tuned specifically to our records
         self.multicomp_aid = 300
         self.negation_window = 30
-        self.review_window = 30
+        self.review_window = review_window
+        self.strict_mode = strict
         
         #build regex
         self.edge_cases = ["DRUGS ON XXXXXXXXX", "XXXXX ON DISCHARGE", "DRUGS XXXXXXXXXXXX", "DRUGS ON X"]
@@ -19,7 +22,10 @@ class DrugAnnotator:
         self.positive_regex = {}
         for dr in self.all_drugs:
             term = dr.upper()
-            pattern = "(?:"+term+"){s<=1}"
+            if self.strict_mode:
+                pattern = r"\b"+term+r"\b"
+            else:
+                pattern = "(?:"+term+"){s<=1}"
             self.positive_regex[dr] = regex.compile(pattern) # can only have one way to find each drug
             
         self.negative_regex = {}

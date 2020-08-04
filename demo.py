@@ -69,4 +69,19 @@ print(prescriptions['Patient'].nunique())
 print("patients with positive mentions in prescriptions")
 print(df_p_pos['Patient'].nunique())
 
-    
+# =============================================================================
+# demo strict vs non-strict matching
+# =============================================================================
+# without strict matching, the pattern for "azithromycin" will match "CLARITHROMYCIN"
+# i.e. in this example there should be NO detected mentions
+
+txt = "patient will be given clarithromycin"
+annr1 = DrugMentionNLP.DrugAnnotator(["azithromycin"], strict = False)
+annr2 = DrugMentionNLP.DrugAnnotator(["azithromycin"], strict = True)
+
+print("Results for azithromycin without strict mode")
+print(annr1.annotate(txt))
+
+print("Results for azithromycin with strict mode")
+print(annr2.annotate(txt))
+
